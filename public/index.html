@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>HealthLens AI — Full Blood Report Analyzer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- Background -->
+<div class="bg-mesh"></div>
+
+<!-- Header -->
+<header class="site-header">
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-badge">🩺</div>
+      <div>
+        <div class="logo-title">HealthLens <span class="badge-ai">AI</span></div>
+        <div class="logo-sub">Complete Blood Report Analyzer — 17 Parameters</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="container" id="app">
+
+  <!-- ══ INPUT SECTION ══ -->
+  <section class="card input-card" id="inputSection">
+
+    <div class="section-head">
+      <h2>📋 Enter Your Blood Report Values</h2>
+      <p>Fill in as many values as available from your report. Leave blank what you don't have — only entered values will be analyzed.</p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tab-bar">
+      <button class="tab active" id="tabManual" onclick="switchTab('manual')">✏️ Manual Entry</button>
+      <button class="tab" id="tabUpload" onclick="switchTab('upload')">📄 Upload Report</button>
+    </div>
+
+    <!-- Manual Panel -->
+    <div id="panelManual" class="tab-panel">
+
+      <!-- Group: Blood -->
+      <div class="param-group">
+        <div class="group-label">🩸 Blood Count</div>
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Hemoglobin (Hb) <span class="unit">g/dL</span></label>
+            <input type="number" id="f_hemoglobin" placeholder="e.g. 13.2" step="0.1"/>
+            <span class="ref">Normal: 12–17.5</span>
+          </div>
+          <div class="form-field">
+            <label>RBC Count <span class="unit">million/µL</span></label>
+            <input type="number" id="f_rbc" placeholder="e.g. 4.8" step="0.1"/>
+            <span class="ref">Normal: 4.0–5.5</span>
+          </div>
+          <div class="form-field">
+            <label>WBC Count <span class="unit">cells/µL</span></label>
+            <input type="number" id="f_wbc" placeholder="e.g. 7500" step="100"/>
+            <span class="ref">Normal: 4000–11000</span>
+          </div>
+          <div class="form-field">
+            <label>Platelets (PLT) <span class="unit">cells/µL</span></label>
+            <input type="number" id="f_platelets" placeholder="e.g. 250000" step="1000"/>
+            <span class="ref">Normal: 150000–400000</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Group: Sugar & Lipids -->
+      <div class="param-group">
+        <div class="group-label">🍬 Glucose & Lipids</div>
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Blood Glucose (Fasting) <span class="unit">mg/dL</span></label>
+            <input type="number" id="f_glucose" placeholder="e.g. 95" step="1"/>
+            <span class="ref">Normal fasting: 70–100</span>
+          </div>
+          <div class="form-field">
+            <label>Total Cholesterol <span class="unit">mg/dL</span></label>
+            <input type="number" id="f_cholesterol" placeholder="e.g. 185" step="1"/>
+            <span class="ref">Optimal: &lt;200</span>
+          </div>
+          <div class="form-field">
+            <label>LDL Cholesterol <span class="unit">mg/dL</span></label>
+            <input type="number" id="f_ldl" placeholder="e.g. 110" step="1"/>
+            <span class="ref">Optimal: &lt;100</span>
+          </div>
+          <div class="form-field">
+            <label>HDL Cholesterol <span class="unit">mg/dL</span></label>
+            <input type="number" id="f_hdl" placeholder="e.g. 55" step="1"/>
+            <span class="ref">Good: &gt;60</span>
+          </div>
+          <div class="form-field">
+            <label>Triglycerides <span class="unit">mg/dL</span></label>
+            <input type="number" id="f_triglycerides" placeholder="e.g. 140" step="1"/>
+            <span class="ref">Normal: &lt;150</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Group: Kidney -->
+      <div class="param-group">
+        <div class="group-label">🫘 Kidney Function</div>
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Blood Urea Nitrogen (BUN) <span class="unit">mg/dL</span></label>
+            <input type="number" id="f_bun" placeholder="e.g. 14" step="0.1"/>
+            <span class="ref">Normal: 7–20</span>
+          </div>
+          <div class="form-field">
+            <label>Creatinine <span class="unit">mg/dL</span></label>
+            <input type="number" id="f_creatinine" placeholder="e.g. 0.9" step="0.1"/>
+            <span class="ref">Normal: 0.6–1.2</span>
+          </div>
+          <div class="form-field">
+            <label>Uric Acid <span class="unit">mg/dL</span></label>
+            <input type="number" id="f_uricAcid" placeholder="e.g. 5.5" step="0.1"/>
+            <span class="ref">Normal: 3.4–7.0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Group: Electrolytes -->
+      <div class="param-group">
+        <div class="group-label">⚡ Electrolytes</div>
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Sodium (Na⁺) <span class="unit">mEq/L</span></label>
+            <input type="number" id="f_sodium" placeholder="e.g. 140" step="1"/>
+            <span class="ref">Normal: 136–145</span>
+          </div>
+          <div class="form-field">
+            <label>Potassium (K⁺) <span class="unit">mEq/L</span></label>
+            <input type="number" id="f_potassium" placeholder="e.g. 4.2" step="0.1"/>
+            <span class="ref">Normal: 3.5–5.0</span>
+          </div>
+          <div class="form-field">
+            <label>Calcium (Ca²⁺) <span class="unit">mg/dL</span></label>
+            <input type="number" id="f_calcium" placeholder="e.g. 9.5" step="0.1"/>
+            <span class="ref">Normal: 8.5–10.5</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Group: Hormones & Vitamins -->
+      <div class="param-group">
+        <div class="group-label">🌿 Vitamins & Hormones</div>
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Vitamin D <span class="unit">ng/mL</span></label>
+            <input type="number" id="f_vitaminD" placeholder="e.g. 28" step="1"/>
+            <span class="ref">Sufficient: &gt;30</span>
+          </div>
+          <div class="form-field">
+            <label>TSH (Thyroid) <span class="unit">mIU/L</span></label>
+            <input type="number" id="f_tsh" placeholder="e.g. 2.1" step="0.1"/>
+            <span class="ref">Normal: 0.4–4.0</span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /panelManual -->
+
+    <!-- Upload Panel -->
+    <div id="panelUpload" class="tab-panel hidden">
+      <div class="upload-zone" id="uploadZone"
+           onclick="document.getElementById('fileInput').click()"
+           ondragover="handleDragOver(event)" ondrop="handleDrop(event)">
+        <div class="upload-icon">📁</div>
+        <p class="upload-title">Drop your blood report here</p>
+        <p class="upload-sub">Supports JPG, PNG, PDF • Click or drag &amp; drop</p>
+        <input type="file" id="fileInput" accept="image/*,.pdf" style="display:none" onchange="handleFileUpload(event)"/>
+      </div>
+
+      <div id="ocrProgress" class="ocr-progress hidden">
+        <div class="ocr-spinner"></div>
+        <div class="ocr-text-wrap">
+          <p id="ocrStatus">Initializing OCR engine…</p>
+          <div class="progress-bg"><div class="progress-fill" id="progressBar" style="width:0%"></div></div>
+        </div>
+      </div>
+
+      <div id="ocrPreview" class="ocr-preview hidden">
+        <div class="preview-head">📝 Raw OCR Text <span class="preview-note">(what was scanned)</span></div>
+        <pre id="ocrRawText"></pre>
+      </div>
+
+      <div id="extractedValues" class="extracted-box hidden">
+        <div class="extracted-head">✅ Values Detected from Report</div>
+        <div id="extractedGrid" class="extracted-grid"></div>
+        <p class="extracted-note">✏️ Values have been filled in the manual form above. You can edit them before analyzing.</p>
+      </div>
+    </div><!-- /panelUpload -->
+
+    <div id="errorMsg" class="error-msg hidden"></div>
+
+    <button class="btn-analyze" id="btnAnalyze" onclick="runAnalysis()">
+      🔬 Analyze My Blood Report
+    </button>
+
+  </section>
+
+  <!-- ══ LOADING ══ -->
+  <div id="loadingSection" class="loading-wrap hidden">
+    <div class="loading-rings">
+      <div class="ring r1"></div><div class="ring r2"></div><div class="ring r3"></div>
+      <span class="ring-icon">🧬</span>
+    </div>
+    <p>Analyzing your complete blood report…</p>
+  </div>
+
+  <!-- ══ RESULTS ══ -->
+  <section id="resultsSection" class="hidden">
+
+    <!-- Top bar -->
+    <div class="results-topbar">
+      <h2 class="results-title">📊 Your Blood Report Analysis</h2>
+      <button class="btn-reset" onclick="resetAll()">🔄 New Analysis</button>
+    </div>
+
+    <!-- Overall Summary Banner -->
+    <div id="summaryBanner" class="summary-banner"></div>
+
+    <!-- Condition Alerts -->
+    <div id="conditionSection" class="condition-section hidden">
+      <h3 class="section-heading">🚨 Detected Health Conditions</h3>
+      <div id="conditionCards" class="condition-grid"></div>
+    </div>
+
+    <!-- Chart -->
+    <div class="card chart-card">
+      <h3 class="card-title">📈 Visual Overview of Your Values</h3>
+      <p class="card-sub">Bar = your value. Dashed line = upper normal limit.</p>
+      <div class="chart-scroll">
+        <div id="chartContainer" class="chart-container">
+          <canvas id="healthChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Per-parameter results -->
+    <h3 class="section-heading">🔬 Detailed Parameter Analysis</h3>
+    <div id="paramResults" class="param-results"></div>
+
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <p>⚠️ <strong>Disclaimer:</strong> This tool is for educational purposes only. It is not a substitute for professional medical advice. Always consult a qualified doctor for diagnosis and treatment.</p>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
